@@ -4,6 +4,7 @@ fs.readFile('input4.txt', 'utf8', function(err, data) {
     data = data.trim().replace(/\r/g,"").split("\n");
     [calls, boards] = prepareData(data);
     console.log("1", findWinning(calls, boards));
+    console.log("2", findLastWinning(calls, boards));
 });
 
 function prepareData(data) {
@@ -66,6 +67,23 @@ function findWinning(calls, boards) {
             board.callNumber(number);
             if (board.isWinning()) {
                 return board, number * Array.from(board.numbers).reduce((a,b) => a + b)
+            }
+        }
+    }
+    return undefined;
+}
+
+function findLastWinning(calls, boards) {
+    let currentBoards = [...boards];
+    for (const number of calls) {
+        for (const board of currentBoards) {
+            board.callNumber(number);
+            if (board.isWinning()) {
+                if (currentBoards.length === 1) {
+                    return board, number * Array.from(board.numbers).reduce((a,b) => a + b)
+                } else {
+                    currentBoards = currentBoards.filter(x => x != board);
+                }
             }
         }
     }
