@@ -5,6 +5,7 @@ fs.readFile('input11.txt', 'utf8', function (err, data) {
     if (err) throw err;
     grid = data.trim().replace(/\r/g, "").split("\n").map(x => x.split('').map(n => parseInt(n)));
     console.log("1:", countFlashes(grid, 100));
+    console.log("2:", solve2(grid));
 });
 
 function countFlashes(grid, steps) {
@@ -19,6 +20,25 @@ function countFlashes(grid, steps) {
         grid = setToZeros(grid);
     }
     return flashes;
+}
+
+function solve2(grid) {
+    let step = 0;
+    const octopusses = grid.length * grid[0].length;
+    while (true) {
+        grid = increaseStep(grid);
+        let stepFlashes = 0;
+        let newFlashes = 0;
+        do {
+            [grid, newFlashes] = flashStep(grid);
+            stepFlashes += newFlashes;
+        } while (newFlashes !== 0);
+        grid = setToZeros(grid);
+        step++;
+        if (stepFlashes === octopusses)
+            return step;
+    }
+    return -1;
 }
 
 function increaseStep(grid) {
