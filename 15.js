@@ -5,6 +5,7 @@ fs.readFile('input15.txt', 'utf8', function (err, data) {
     if (err) throw err;
     const grid = data.trim().replace(/\r/g, "").split("\n").map(line => line.split('').map(x => parseInt(x)));
     console.log("1:", findShortestPath(grid));
+    console.log("2:", findShortestPath(increaseGrid(grid)));
 });
 
 function findShortestPath(grid) {
@@ -31,14 +32,38 @@ function findShortestPath(grid) {
                 prioirty.push(cx, cy, alt);
             }
         });
+        if (x === width - 1 && y === height - 1)
+            break;
     }
 
-    return dist[height -1 ][width - 1];
+    return dist[height - 1][width - 1];
+}
+
+function increaseGrid(grid, times = 5) {
+    const heigth = grid.length;
+    const width = grid[0].length;
+    const newGrid = new Array(heigth * times).fill(0).map(() => new Array(width * times).fill(0));
+    for (let bx = 0; bx < times; bx++) {
+        for (let by = 0; by < times; by++) {
+            const bw = bx * width;
+            const bh = by * heigth;
+            for (let y = 0; y < heigth; y++) {
+                for (let x = 0; x < width; x++) {
+                    newGrid[bh + y][x + bw] = grid[y][x] + bx + by;
+                    if (newGrid[bh + y][x + bw] >= 10) {
+                        newGrid[bh + y][x + bw] = (newGrid[bh + y][x + bw] % 10) + 1;
+                    }
+                }
+            }
+        }
+    }
+    return newGrid;
 }
 
 class PriorityQueue {
     constructor() {
         this.data = [];
+        this.points = new Map();
         this.isInit = false;
     }
 
@@ -49,23 +74,34 @@ class PriorityQueue {
     }
 
     push(x, y, priority) {
-        const old = this.data.filter(d => d.x === x && d.y === y)[0];
-        if (!old) {
-            this.data.push({ priority, x, y });
+        if (!this.contains(x, y)) {
+            const value = { priority, x, y };
+            this.points.set(this.toKey(x, y), value);
+            this.data.push(value);
         } else {
+            const old = this.points.get(this.toKey(x, y));
             old.priority = priority;
+            const index = this.data.indexOf(old);
+            if (index > -1) {
+                this.data.splice(index, 1);
+            }
+            // Find position in data
+            let added = false;
+            for (let i = this.data.length - 1; i >= 0; i--) {
+                if (this.data[i].priority > priority) {
+                    this.data.splice(i + 1, 0, old);
+                    added = true;
+                    break;
+                }
+            }
+            if (!added) {
+                this.data.splice(0, 0, old);
+            }
         }
-        if (this.isInit)
-            this.sort();
     }
 
     contains(x, y) {
-        // Optimize with map
-        return this.data.filter(d => d.x === x && d.y === y).length > 0;
-    }
-
-    remove(x, y) {
-        this.data = this.data.filter(d => d.x !== x && d.y !== y);
+        return this.points.has(this.toKey(x, y));
     }
 
     sort() {
@@ -73,10 +109,16 @@ class PriorityQueue {
     }
 
     pop() {
-        return this.data.pop();
+        const value = this.data.pop();
+        this.points.delete(this.toKey(value.x, value.y))
+        return value;
     }
 
     isEmpty() {
         return this.data.length === 0;
+    }
+
+    toKey(x, y) {
+        return `${x}_${y}`;
     }
 }
