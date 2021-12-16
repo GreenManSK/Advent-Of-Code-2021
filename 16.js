@@ -4,12 +4,18 @@ var helpers = require('./helpers');
 fs.readFile('input16.txt', 'utf8', function (err, data) {
     if (err) throw err;
     const packet = data.trim();
-    console.log(solve1(packet));
+    console.log("1:", solve1(packet));
+    console.log("2:", solve2(packet));
 });
 
 function solve1(hexPacket) {
     const { packet } = parsePacketHex(hexPacket);
     return sumVersions(packet);
+}
+
+function solve2(hexPacket) {
+    const { packet } = parsePacketHex(hexPacket);
+    return packet.value;
 }
 
 function sumVersions(packet) {
@@ -48,30 +54,81 @@ function parsePacket(binPacket) {
         type
     }
 
-    switch (type) {
-        case 4: {
-            const [value, remainder] = parseLiteral(binPacket.substring(6, binPacket.length));
-            return {
-                packet: {
-                    ...base,
-                    value
-                },
-                remainder
-            };
+    if (type === 4) {
+        const [value, remainder] = parseLiteral(binPacket.substring(6, binPacket.length));
+        return {
+            packet: {
+                ...base,
+                value
+            },
+            remainder
+        };
+    } else {
+        const is15Bit = binPacket.charAt(6) === '0';
+        const packet = binPacket.substring(7, binPacket.length);
+        const { subPackets, remainder } = is15Bit ? parse15Bit(packet) : parse11Bit(packet);
+        const subPacketsValues = subPackets.map(p => p.value);
+        let value = 0;
+        switch (type) {
+            case 0:
+                value = subPacketsValues.reduce((a, b) => a + b, 0);
+                break;
+            case 1:
+                value = subPacketsValues.reduce((a, b) => a * b, 1);
+                break;
+            case 2:
+                value = Math.min(...subPacketsValues);
+                break;
+            case 3:
+                value = Math.max(...subPacketsValues);
+                break;
+            case 5:
+                value = subPacketsValues[0] > subPacketsValues[1] ? 1 : 0;
+                break;
+            case 6:
+                value = subPacketsValues[0] < subPacketsValues[1] ? 1 : 0;
+                break;
+            case 7:
+                value = subPacketsValues[0] == subPacketsValues[1] ? 1 : 0;
+                break;
         }
-        default:
-            const is15Bit = binPacket.charAt(6) === '0';
-            const packet = binPacket.substring(7, binPacket.length);
-            const { subPackets, remainder } = is15Bit ? parse15Bit(packet) : parse11Bit(packet);
-            return {
-                packet: {
-                    ...base,
-                    is15Bit,
-                    subPackets
-                },
-                remainder
-            };
+        return {
+            packet: {
+                ...base,
+                is15Bit,
+                subPackets,
+                value
+            },
+            remainder
+        };
     }
+
+    // switch (type) {
+    //     case 4: {
+    //         const [value, remainder] = parseLiteral(binPacket.substring(6, binPacket.length));
+    //         return {
+    //             packet: {
+    //                 ...base,
+    //                 value
+    //             },
+    //             remainder
+    //         };
+    //     }
+    //     default:
+    //         const is15Bit = binPacket.charAt(6) === '0';
+    //         const packet = binPacket.substring(7, binPacket.length);
+    //         const { subPackets, remainder } = is15Bit ? parse15Bit(packet) : parse11Bit(packet);
+    //         let value = 0;
+    //         return {
+    //             packet: {
+    //                 ...base,
+    //                 is15Bit,
+    //                 subPackets,
+    //                 value
+    //             },
+    //             remainder
+    //         };
+    // }
 }
 
 function parse11Bit(packet) {
