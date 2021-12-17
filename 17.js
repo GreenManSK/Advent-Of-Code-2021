@@ -5,21 +5,33 @@ fs.readFile('input17.txt', 'utf8', function (err, data) {
     if (err) throw err;
     const targetSize = data.trim().replace('target area: ', '').split(', ').map(x => x.replace(/\w=/, '').split('..').map(y => parseInt(y)));
     console.log("1:", findHighestPosition(targetSize));
-    // doReachTarget([17,-4], targetSize)
+    console.log("2:", countCorrectShots(targetSize));
 });
 
 function findHighestPosition(targetSize) {
     let maxY = 0;
-    for (let x = 0; x < targetSize[0][1]; x++) {
-        for (let y = targetSize[1][0]; y < -targetSize[1][0]; y++) {
+    for (let x = 0; x <= targetSize[0][1]; x++) {
+        for (let y = targetSize[1][0]; y <= -targetSize[1][0]; y++) {
             const [reach, maxX, newY] = doReachTarget([x, y], targetSize);
             if (reach && newY > maxY) {
-                console.log("new best", x, y);
                 maxY = newY;
             }
         }
     }
     return maxY;
+}
+
+function countCorrectShots(targetSize) {
+    let result = 0;
+    for (let x = 0; x <= targetSize[0][1]; x++) {
+        for (let y = targetSize[1][0]; y <= -targetSize[1][0]; y++) {
+            const [reach] = doReachTarget([x, y], targetSize);
+            if (reach) {
+                result++;
+            }
+        }
+    }
+    return result;
 }
 
 function doReachTarget(velocity, targetSize) {
