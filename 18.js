@@ -3,8 +3,10 @@ var helpers = require('./helpers');
 
 fs.readFile('input18.txt', 'utf8', function (err, data) {
     if (err) throw err;
-    const numbers = data.trim().replace(/\r/g, "").split("\n").map(x => new Tree(...eval(x)));
-    console.log("1:", solve1(...numbers).toString());
+    const numbers = data.trim().replace(/\r/g, "").split("\n");
+    const trees = numbers.map(x => new Tree(...eval(x)));
+    console.log("1:", solve1(...trees));
+    console.log("2:", solve2(numbers));
 });
 
 function solve1(current, ...rest) {
@@ -13,6 +15,18 @@ function solve1(current, ...rest) {
         currentSum = sum(currentSum, tree);
     }
     return currentSum.magnitude();
+}
+
+function solve2(numbers) {
+    let maxMagnitude = Number.MIN_VALUE;
+    for (let number of numbers) {
+        for (let second of numbers) {
+            if (number === second)
+                continue;
+            maxMagnitude = Math.max(maxMagnitude, sum(new Tree(...eval(number)), new Tree(...eval(second))).magnitude());
+        }
+    }
+    return maxMagnitude;
 }
 
 function sum(a, b) {
