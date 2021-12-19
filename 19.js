@@ -6,24 +6,37 @@ fs.readFile('input19.txt', 'utf8', function (err, data) {
     const input = data.trim().replace(/\r/g, "").split("\n");
     const scanners = parseInput(input);
 
-    console.log("1:", solve1(scanners));
+    const [res1, res2] = solve(scanners);
+    console.log("1:", res1);
+    console.log("2:", res2);
 });
 
-function solve1(scanners) {
+function solve(scanners) {
     let changed;
+    let scannerPositions = [[0, 0, 0]];
     do {
         changed = false;
         for (let i = 1; i < scanners.length; i++) {
             const [overlap, pairs] = hasOverlap(scanners[0], scanners[i], 12);
             if (overlap) {
-                scanners[0] = joinScanners(scanners[0], scanners[i], pairs)
+                const [newScanner, oldPosition] = joinScanners(scanners[0], scanners[i], pairs);
+                scannerPositions.push(oldPosition);
+                scanners[0] = newScanner;
                 changed = true;
                 scanners.splice(scanners.indexOf(scanners[i]), 1);
                 break;
             }
         }
     } while (changed);
-    return scanners[0].points.length;
+
+    let largestDistance = 0;
+    for (let i = 0; i < scannerPositions.length; i++) {
+        for (let j = 0; j < scannerPositions.length; j++) {
+            largestDistance = Math.max(largestDistance, manhattanDistance(scannerPositions[i], scannerPositions[j]));
+        }
+    }
+
+    return [scanners[0].points.length, largestDistance];
 }
 
 function joinScanners(a, b, pairs) {
@@ -55,7 +68,8 @@ function joinScanners(a, b, pairs) {
         newPoints.push(pointSum(pointTimes(pointScramble(pointDiff(point, base[1]), scramble), rotation), base[0]));
     }
 
-    return new Scanner(joinPoints(newPoints, a.rawPoints));
+    const oldScanner = pointSum(pointTimes(pointScramble(pointDiff([0, 0, 0], base[1]), scramble), rotation), base[0]);
+    return [new Scanner(joinPoints(newPoints, a.rawPoints)), oldScanner];
 }
 
 function hasOverlap(a, b, minOverlap) {
@@ -175,4 +189,12 @@ function pointScramble(point, map) {
         result[i] = point[map[i]];
     }
     return result;
+}
+
+function manhattanDistance(a, b) {
+    let distance = 0;
+    for (let i = 0; i < 3; i++) {
+        distance += Math.abs(a[i] - b[i]);
+    }
+    return distance;
 }
