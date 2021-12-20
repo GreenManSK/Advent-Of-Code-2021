@@ -7,6 +7,7 @@ fs.readFile('input20.txt', 'utf8', function (err, data) {
     const [enhancement, image] = parseInput(input);
 
     console.log("1:", solve1(image, enhancement));
+    console.log("2:", solve2(image, enhancement));
 });
 
 function parseInput(input) {
@@ -17,8 +18,19 @@ function parseInput(input) {
 
 function solve1(image, enhancement) {
     const first = enhance(image, enhancement, '.');
-    const second = enhance(first, enhancement, '#');
+    const second = enhance(first, enhancement, enhancement[0] === '.' ? '.' : '#');
     return second.flat().filter(x => x === '#').length;
+}
+
+function solve2(image, enhancement) {
+    const iterations = 50;
+    let last = image;
+    let lastBackground = '.';
+    for (let i = 0; i < iterations; i++) {
+        last = enhance(last, enhancement, lastBackground);
+        lastBackground = lastBackground === '.' ? enhancement[0] : enhancement[enhancement.length - 1];
+    }
+    return last.flat().filter(x => x === '#').length;
 }
 
 function enhance(image, enhancement, base = '.') {
