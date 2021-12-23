@@ -1,12 +1,20 @@
 var fs = require('fs');
 var helpers = require('./helpers');
 
-fs.readFile('input23.txt', 'utf8', function (err, data) {
+fs.readFile('input23a.txt', 'utf8', function (err, data) {
     if (err) throw err;
     const input = data.trim().replace(/\r/g, "").split("\n").map(x => x.split(''));
     const diagram = new Diagram(input);
 
-    console.log("1:", solve1(diagram));
+    console.log("1:", solve1(diagram)[0]);
+});
+
+fs.readFile('input23b.txt', 'utf8', function (err, data) {
+    if (err) throw err;
+    const input = data.trim().replace(/\r/g, "").split("\n").map(x => x.split(''));
+    const diagram = new Diagram(input);
+
+    console.log("2:", solve1(diagram)[0]);
 });
 
 const energyMap = {
