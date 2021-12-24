@@ -8,22 +8,8 @@ function process(z, zdiv, a, b, w) {
     return z;
 }
 
-const digits = [9, 8, 7, 6, 5, 4, 3, 2, 1];
-// z = 0;
-// z = process(z, 1, 14, 12, input[0]);
-// z = process(z, 1, 10, 9, input[1]);
-// z = process(z, 1, 13, 8, input[2]);
-// z = process(z, 26, -8, 3, input[3]);
-// z = process(z, 1, 11, 0, input[4]);
-// z = process(z, 1, 11, 11, input[5]);
-// z = process(z, 1, 14, 10, input[6]);
-// z = process(z, 26, -11, 13, input[7]);
-// z = process(z, 1, 14, 3, input[8]);
-// z = process(z, 26, -1, 10, input[9]);
-// z = process(z, 26, -8, 10, input[10]);
-// z = process(z, 26, -5, 14, input[11]);
-// z = process(z, 26, -16, 6, input[12]);
-// z = process(z, 26, -6, 5, input[13]);
+// const digits = [9, 8, 7, 6, 5, 4, 3, 2, 1];
+const digits = [1,2,3,4,5,6,7,8,9];
 
 const stepMap = {};
 const maxStep = 14;
@@ -81,7 +67,8 @@ for (let step = 0; step < maxStep; step++) {
             stepData.digitToState.get(d).add(value);
             if (stepData.stateToNumber.has(value)) {
                 const currentNumber = stepData.stateToNumber.get(value);
-                if (currentNumber[currentNumber.length - 1] < d)
+                // if (currentNumber[currentNumber.length - 1] < d)
+                if (currentNumber[currentNumber.length - 1] > d)
                     currentNumber[currentNumber.length - 1] = d;
             } else {
                 stepData.stateToNumber.set(value, [...prevStepData.stateToNumber.get(z), d]);
@@ -92,4 +79,4 @@ for (let step = 0; step < maxStep; step++) {
     console.log(stepData.states.size);
 }
 
-console.log(stepMap[maxStep - 1].stateToNumber.get(0));
+console.log(stepMap[maxStep - 1].stateToNumber.get(0).join(''));
